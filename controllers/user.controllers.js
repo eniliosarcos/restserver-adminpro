@@ -1,52 +1,149 @@
-const {response, request} = require('express')
+const {response, request} = require('express');
+const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const { JWTgenerate } = require('../helpers/jwt-generator');
 
-const usuariosGet = (req = request, res = response) => {
+const getUsers = async (req = request, res = response) => {
 
     // const query = req.query;
 
     //desestructuracion
-    const {limit, page = 1} = req.query; //captura de informacion en los http
+    // const {limit, page = 1} = req.query; //captura de informacion en los http
+
+    const users = await User.find({}, 'name lastName email role google');
 
     res.json({
-        msg: 'get API - controller',
-        page,
-        limit
+        msg: 'Usuario obtenido',
+        users,
+        // requestByUserID: req.userID
     })
 }
 
-const usuariosPost = (req = request, res) => {
+const createUser = async(req = request, res = response) => {
 
     // const body = req.body;
 
     //desestructuracion
-    const {nombre, edad} = req.body; //captura de datos del front
+    const {email, password} = req.body; //captura de datos del front
 
-    res.status(201).json({
-        msg: 'post API - controller',
-        nombre,
-        edad
-    })
+    try {
+
+        const emailExist = await User.findOne({email});
+
+        if(emailExist){
+            return res.status(400).json({
+                ok:false,
+                msg: 'El Correo ya esta registrado'
+            })
+        }
+
+        const user = new User(req.body);
+
+        const salt = bcrypt.genSaltSync();
+        user.password = bcrypt.hashSync(password, salt);
+
+        await user.save();
+
+        const token = await JWTgenerate(user.id);
+    
+        res.status(201).json({
+            msg: 'Usuario creado',
+            user,
+            token
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'error inesperado en el servidor. revisar logs'
+        })
+    }
+
 }
-const usuariosPut = (req = request, res) => {
+
+const updateUser = async(req = request, res = response) => {
 
     // const userID = req.params.userID;
     //desestructuracion
     const {userID} = req.params; //captura de informacion relevante como el ID
 
-    res.json({
-        msg: 'put API - controller',
-        userID
-    })
+    try {
+
+        const userDB = await User.findById(userID);
+
+        if(!userDB){
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe un usuario por ese id'
+            });
+        }
+
+        const {password, google, email, ...fields} = req.body;
+
+        if(userDB.email !== email){
+
+            const emailExist = await User.findOne({email})
+            if(emailExist){
+                return res.status(400).json({
+                    ok:false,
+                    msg: 'Ya existe un usuario con ese correo'
+                })
+            }
+        }
+
+        fields.email = email;
+        const userUpdated = await User.findByIdAndUpdate(userID,fields,{new:true});
+
+        res.status(203).json({
+            ok: true,
+            userUpdated
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'error inesperado en el servidor. revisar logs'
+        })
+    }
 }
-const usuariosDelete = (req, res) => {
-    res.json({
-        msg: 'delete API - controller'
-    })
+
+const deleteUser = async(req= request, res = response) => {
+
+    const {userID} = req.params; //captura de informacion relevante como el ID
+
+    try {
+        const userDB = await User.findById(userID);
+
+        if(!userDB){
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe un usuario por ese id'
+            });
+        }
+
+        await User.findByIdAndDelete(userID);
+
+        res.status(200).json({
+            ok: true,
+            msg: 'Usuario eliminado'
+        });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'error inesperado en el servidor. revisar logs'
+        })
+    }
+
+
 }
 
 module.exports = {
-    usuariosGet,
-    usuariosPut,
-    usuariosPost,
-    usuariosDelete
+    getUsers,
+    updateUser,
+    createUser,
+    deleteUser
 }
