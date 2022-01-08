@@ -5,15 +5,16 @@ const { JWTgenerate } = require('../helpers/jwt-generator');
 
 const getUsers = async (req = request, res = response) => {
 
-    // const query = req.query;
+    const from = Number(req.query.from) || 0;
+    const limit = Number(req.query.limit) || 10;
 
-    //desestructuracion
-    // const {limit, page = 1} = req.query; //captura de informacion en los http
-
-    const users = await User.find({}, 'name lastName email role google');
+    const [users, totalUsers] = await Promise.all([
+        User.find().skip(from).limit(limit),
+        User.count()
+    ])
 
     res.json({
-        msg: 'Usuario obtenido',
+        totalUsers,
         users,
         // requestByUserID: req.userID
     })

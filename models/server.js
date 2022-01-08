@@ -13,6 +13,10 @@ class Server{
         this.paths = {
             auth: '/api/auth',
             user: '/api/usuarios',
+            hospital: '/api/hospitales',
+            medic: '/api/medicos',
+            search: '/api/todo',
+            upload: '/api/subir',
         }
 
         //middlewares
@@ -43,6 +47,10 @@ class Server{
 
         this.app.use(this.paths.user, require('../routers/user.routers'));
         this.app.use(this.paths.auth, require('../routers/auth.routers'));
+        this.app.use(this.paths.hospital, require('../routers/hospital.routers'));
+        this.app.use(this.paths.medic, require('../routers/medic.routers'));
+        this.app.use(this.paths.search, require('../routers/search.routers'));
+        this.app.use(this.paths.upload, require('../routers/upload.routers'));
     }
 
     listen(){
