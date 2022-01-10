@@ -79,6 +79,20 @@ const updateImg = async(req = request, res = response) => {
     });
 }
 
+const returnImg = (req = request, res = response) => {
+  const {collection, img} = req.params;
+
+  const pathImage = path.join(__dirname, '../uploads', collection, img);
+
+  if(!fileSystem.existsSync(pathImage)){
+    const pathImage = path.join(__dirname, '../assets/no-image.jpg');
+    return res.sendFile(pathImage);
+  }
+
+  res.sendFile(pathImage);
+}
+
 module.exports = {
-    updateImg
+    updateImg,
+    returnImg
 }
