@@ -75,7 +75,7 @@ const updateImg = async(req = request, res = response) => {
     res.json({
         ok: true,
         collection,
-        model
+        user:model
     });
 }
 
