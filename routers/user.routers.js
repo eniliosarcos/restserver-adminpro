@@ -12,7 +12,7 @@ router.get('/',JWTvalidator, getUsers);
 
 router.post('/',[
     check('name', 'El nombre es obligatorio').notEmpty(),
-    check('lastName', 'El nombre es obligatorio').notEmpty(),
+    check('lastName', 'El apellido es obligatorio').notEmpty(),
     check('password', 'El password es obligatorio').notEmpty(),
     check('email', 'El email es obligatorio').notEmpty(),
     validateFields

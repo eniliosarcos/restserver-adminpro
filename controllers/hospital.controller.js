@@ -54,25 +54,78 @@ const updateHospital = async(req = request, res = response) => {
     // const userID = req.params.userID;
     //desestructuracion
     const {id} = req.params; //captura de informacion relevante como el ID
+    const {userID} = req;
 
-    res.json({
-        ok:true,
-        msg: 'Hospitales update',
-        id
-        // requestByUserID: req.userID
-    })
+    try {
+
+        const hospitalDB = await Hospital.findById(id);
+
+        if(!hospitalDB){
+            return res.status(404).json({
+                ok:false,
+                msg:'Hospital no encontrado por id'
+            });
+        }
+
+        const data = {
+            ...req.body,
+            user: userID
+        }
+
+        const hospitalUpdated = await Hospital.findByIdAndUpdate(id, data, {new: true});
+        
+        res.json({
+            ok:true,
+            hospital: hospitalUpdated
+        });
+    } catch (error) {
+
+        console.log(error);
+        res.status(500).json({
+            ok:false,
+            msg: 'hable con el administrador'
+        })
+        
+    }
+
 }
 
 const deleteHospital = async(req= request, res = response) => {
 
     const {id} = req.params; //captura de informacion relevante como el ID
+    const {userID} = req;
 
-    res.json({
-        ok:true,
-        msg: 'Hospitales delete',
-        id,
-        // requestByUserID: req.userID
-    })
+    try {
+
+        const hospitalDB = await Hospital.findById(id);
+
+        if(!hospitalDB){
+            return res.status(404).json({
+                ok:false,
+                msg:'Hospital no encontrado por id'
+            });
+        }
+
+        const data = {
+            state: false,
+            user: userID
+        }
+
+        const hospitalUpdated = await Hospital.findByIdAndUpdate(id, data, {new: true});
+        
+        res.json({
+            ok:true,
+            hospital: hospitalUpdated
+        });
+    } catch (error) {
+
+        console.log(error);
+        res.status(500).json({
+            ok:false,
+            msg: 'hable con el administrador'
+        })
+        
+    }
 
 
 }
