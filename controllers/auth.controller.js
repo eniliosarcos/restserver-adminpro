@@ -87,12 +87,14 @@ const googleSignIn = async(req = request, res = response) => {
     }
 }
 
-const renewToken = (req = request, res = response) => {
+const renewToken = async(req = request, res = response) => {
     const {userID} = req;
+
+    const userDB = await User.findById(userID);
     
     res.status(200).json({
         ok:true,
-        userID
+        userDB
     })
 }
 
