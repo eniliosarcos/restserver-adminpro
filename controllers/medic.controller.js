@@ -5,9 +5,14 @@ const { JWTgenerate } = require('../helpers/jwt-generator');
 
 const getMedics = async (req = request, res = response) => {
 
-    const medics = await Medic.find()
-                                    .populate('user', 'name img')
-                                    .populate('hospital', 'name img');
+    const from = Number(req.query.from) || 0;
+    const limit = Number(req.query.limit) || 10;
+
+    const [medics, totalMedics] = await Promise.all([
+        Medic.find().skip(from).limit(limit).populate('user', 'name img').populate('hospital', 'name img'),
+        Medic.count()
+    ]) 
+
 
     //desestructuracion
     // const {limit, page = 1} = req.query; //captura de informacion en los http
@@ -15,10 +20,38 @@ const getMedics = async (req = request, res = response) => {
     // const Hospitals = await Hospital.find({}, 'name lastName email role google');
 
     res.json({
-        ok:true,
+        totalMedics,
         medics
         // requestByUserID: req.userID
     })
+}
+
+const getMedicById = async (req = request, res = response) => {
+
+    const {id} = req.params
+
+    try {
+        const medic = await Medic.findById(id).populate('user', 'name img').populate('hospital', 'name img');
+
+        res.json({
+            ok: true,
+            medic
+            // requestByUserID: req.userID
+        })
+    } catch (error) {
+        console.log(error);
+        res.json({
+            ok:false,
+            msg: 'Hable con el administrador'
+        })
+    }
+
+
+    //desestructuracion
+    // const {limit, page = 1} = req.query; //captura de informacion en los http
+
+    // const Hospitals = await Hospital.find({}, 'name lastName email role google');
+
 }
 
 const createMedic = async(req = request, res = response) => {
@@ -105,17 +138,23 @@ const deleteMedic = async(req= request, res = response) => {
                 msg:'Medico no encontrado por id'
             });
         }
+        // -------------------------------- IMPLEMENTAR DESPUES
+        // const data = {
+        //     state: false,
+        //     user: userID
+        // }
 
-        const data = {
-            state: false,
-            user: userID
-        }
-
-        const medicUpdated = await Medic.findByIdAndUpdate(id, data, {new: true});
+        // const medicUpdated = await Medic.findByIdAndUpdate(id, data, {new: true});
+        
+        // res.json({
+        //     ok:true,
+        //     medic: medicUpdated
+        // });
+        await Medic.findByIdAndDelete(id);
         
         res.json({
             ok:true,
-            medic: medicUpdated
+            resul: 'Medico borrado'
         });
     } catch (error) {
 
@@ -131,6 +170,7 @@ const deleteMedic = async(req= request, res = response) => {
 
 module.exports = {
     getMedics,
+    getMedicById,
     updateMedic,
     createMedic,
     deleteMedic

@@ -4,11 +4,13 @@ const { check } = require('express-validator')
 const { validateFields } = require('../middlewares/fields-validator');
 const { JWTvalidator } = require('../middlewares/jwt-validator');
 
-const { getMedics, updateMedic, createMedic, deleteMedic } = require('../controllers/medic.controller');
+const { getMedics, updateMedic, createMedic, deleteMedic, getMedicById } = require('../controllers/medic.controller');
 
 const router = Router();
 
 router.get('/', getMedics);
+
+router.get('/:id', JWTvalidator ,getMedicById);
 
 router.post('/',[
     JWTvalidator,

@@ -5,17 +5,17 @@ const { JWTgenerate } = require('../helpers/jwt-generator');
 
 const getHospitals = async (req = request, res = response) => {
 
-    // const query = req.query;
-    const hospitals = await Hospital.find()
-                                            .populate('user','name lastName img');
+    const from = Number(req.query.from) || 0;
+    const limit = Number(req.query.limit) || 10;
 
-    //desestructuracion
-    // const {limit, page = 1} = req.query; //captura de informacion en los http
-
-    // const Hospitals = await Hospital.find({}, 'name lastName email role google');
+                                            
+    const [hospitals, totalHospitals] = await Promise.all([
+        Hospital.find().skip(from).limit(limit).populate('user','name lastName img'),
+        Hospital.count()
+    ])
 
     res.json({
-        ok:true,
+        totalHospitals,
         hospitals
         // requestByUserID: req.userID
     })
@@ -106,16 +106,24 @@ const deleteHospital = async(req= request, res = response) => {
             });
         }
 
-        const data = {
-            state: false,
-            user: userID
-        }
+        // ---------------------- IMPLEMENTAR DESPUES
+        // const data = {
+        //     state: false,
+        //     user: userID
+        // }
 
-        const hospitalUpdated = await Hospital.findByIdAndUpdate(id, data, {new: true});
-        
+        // const hospitalUpdated = await Hospital.findByIdAndUpdate(id, data, {new: true});
+
+        // res.json({
+        //     ok:true,
+        //     hospital: hospitalUpdated
+        // });
+
+        await Hospital.findByIdAndDelete(id);
+
         res.json({
             ok:true,
-            hospital: hospitalUpdated
+            result: 'Hospital borrado'
         });
     } catch (error) {
 
