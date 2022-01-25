@@ -26,6 +26,8 @@ const JWTvalidator = (req, res, next) => {
     }
 }
 
+
+
 module.exports = {
     JWTvalidator
 }
